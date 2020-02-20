@@ -192,4 +192,60 @@ void q_reverse(queue_t *q)
  */
 void q_sort(queue_t *q)
 {
+    if (!q || q->size < 2)
+        return;
+    queue_t left, right;
+    left.size = (q->size >> 1) + (q->size & 1);
+    right.size = q->size >> 1;
+    list_ele_t *cur = left.head = q->head;
+    right.tail = q->tail;
+
+    for (size_t i = 0; i < left.size - 1; i++)
+        cur = cur->next;
+
+    left.tail = cur;
+    right.head = cur->next;
+    left.tail->next = right.tail->next = NULL;
+    q->head = q->tail = NULL;
+
+    q_sort(&left);
+    q_sort(&right);
+    q_merge(&left, &right, q);
+}
+
+void q_merge(queue_t *left, queue_t *right, queue_t *q)
+{
+    q->size = left->size + right->size;
+    list_ele_t *l = left->head, *r = right->head;
+    list_ele_t *tem = NULL;
+
+    q->head = less_than(left->head, right->head) ? left->head : right->head;
+    q->tail = q->head;
+    for (size_t i = 0; i < q->size; i++) {
+        if (!r || (l && less_than(l, r))) {
+            tem = l;
+            l = l->next;
+        } else {
+            tem = r;
+            r = r->next;
+        }
+        q->tail->next = tem;
+        q->tail = tem;
+    }
+    tem->next = NULL;
+}
+
+/* compare in lexicographical order */
+bool less_than(list_ele_t *a, list_ele_t *b)
+{
+    char *str_a = a->value, *str_b = b->value;
+    while (*str_a && *str_b) {
+        if (*str_a > *str_b)
+            return false;
+        else if (*str_a++ < *str_b++)
+            return true;
+    }
+    if (!*str_a && *str_b)
+        return true;
+    return false;
 }
