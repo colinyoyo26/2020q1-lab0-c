@@ -185,6 +185,8 @@ void q_reverse(queue_t *q)
     q->head = prev;
 }
 
+static void q_merge(queue_t *left, queue_t *right, queue_t *q);
+static bool less_than(list_ele_t *a, list_ele_t *b);
 /*
  * Sort elements of queue in ascending order
  * No effect if q is NULL or empty. In addition, if q has only one
@@ -213,7 +215,7 @@ void q_sort(queue_t *q)
     q_merge(&left, &right, q);
 }
 
-void q_merge(queue_t *left, queue_t *right, queue_t *q)
+static void q_merge(queue_t *left, queue_t *right, queue_t *q)
 {
     q->size = left->size + right->size;
     list_ele_t *l = left->head, *r = right->head;
@@ -236,7 +238,7 @@ void q_merge(queue_t *left, queue_t *right, queue_t *q)
 }
 
 /* compare in lexicographical order */
-bool less_than(list_ele_t *a, list_ele_t *b)
+static bool less_than(list_ele_t *a, list_ele_t *b)
 {
     char *str_a = a->value, *str_b = b->value;
     while (*str_a && *str_b) {
