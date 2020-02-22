@@ -479,14 +479,15 @@ static void init_in()
  */
 static char *readline()
 {
-    int cnt;
-    char c;
+    int cnt = 0;
     char *lptr = linebuf;
+    char *end = NULL;
 
     if (!buf_stack)
         return NULL;
 
-    for (cnt = 0; cnt < RIO_BUFSIZE - 2; cnt++) {
+    /* end is not NULL only when we find '\n' */
+    while (!end && cnt < RIO_BUFSIZE - 2) {
         if (buf_stack->cnt <= 0) {
             /* Need to read from input file */
             buf_stack->cnt = read(buf_stack->fd, buf_stack->buf, RIO_BUFSIZE);
@@ -509,15 +510,20 @@ static char *readline()
             }
         }
 
-        /* Have text in buffer */
-        c = *buf_stack->bufptr++;
-        *lptr++ = c;
-        buf_stack->cnt--;
-        if (c == '\n')
-            break;
+        size_t len = buf_stack->cnt < RIO_BUFSIZE - 2 - cnt
+                         ? buf_stack->cnt
+                         : RIO_BUFSIZE - 2 - cnt;
+        end = (char *) memchr(buf_stack->bufptr, '\n', len);
+        size_t offset =
+            end ? (intptr_t) end - (intptr_t) buf_stack->bufptr + 1 : len;
+        memcpy(lptr, buf_stack->bufptr, offset);
+        buf_stack->cnt -= offset;
+        buf_stack->bufptr += offset;
+        cnt += offset;
+        lptr += offset;
     }
 
-    if (c != '\n') {
+    if (*(lptr - 1) != '\n') {
         /* Hit buffer limit.  Artificially terminate line */
         *lptr++ = '\n';
     }
