@@ -540,12 +540,9 @@ static char *readline()
 /* Determine if there is a complete command line in input buffer */
 static bool read_ready()
 {
-    for (int i = 0; buf_stack && i < buf_stack->cnt; i++) {
-        if (buf_stack->bufptr[i] == '\n')
-            return true;
-    }
-
-    return false;
+    if (!buf_stack || !memchr(buf_stack->bufptr, '\n', buf_stack->cnt))
+        return false;
+    return true;
 }
 
 static bool cmd_done()
