@@ -480,6 +480,7 @@ static void init_in()
 static char *readline()
 {
     int cnt;
+    int cpy_cnt = 0;
     char c;
     char *lptr = linebuf;
 
@@ -488,6 +489,9 @@ static char *readline()
 
     for (cnt = 0; cnt < RIO_BUFSIZE - 2; cnt++) {
         if (buf_stack->cnt <= 0) {
+            memcpy(lptr, buf_stack->bufptr, cpy_cnt);
+            lptr += cpy_cnt;
+            cpy_cnt = 0;
             /* Need to read from input file */
             buf_stack->cnt = read(buf_stack->fd, buf_stack->buf, RIO_BUFSIZE);
             buf_stack->bufptr = buf_stack->buf;
@@ -510,13 +514,15 @@ static char *readline()
         }
 
         /* Have text in buffer */
-        c = *buf_stack->bufptr++;
-        *lptr++ = c;
+        c = *(buf_stack->bufptr + cpy_cnt++);
         buf_stack->cnt--;
         if (c == '\n')
             break;
     }
 
+    memcpy(lptr, buf_stack->bufptr, cpy_cnt);
+    lptr += cpy_cnt;
+    buf_stack->bufptr += cpy_cnt;
     if (c != '\n') {
         /* Hit buffer limit.  Artificially terminate line */
         *lptr++ = '\n';
