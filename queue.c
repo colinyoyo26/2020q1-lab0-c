@@ -186,7 +186,7 @@ void q_reverse(queue_t *q)
 }
 
 static void q_merge(queue_t *left, queue_t *right, queue_t *q);
-static bool less_than(list_ele_t *a, list_ele_t *b);
+
 /*
  * Sort elements of queue in ascending order
  * No effect if q is NULL or empty. In addition, if q has only one
@@ -221,10 +221,11 @@ static void q_merge(queue_t *left, queue_t *right, queue_t *q)
     list_ele_t *l = left->head, *r = right->head;
     list_ele_t *tem = NULL;
 
-    q->head = less_than(left->head, right->head) ? left->head : right->head;
+    q->head = LESS_THAN(left->head->value, right->head->value) ? left->head
+                                                               : right->head;
     q->tail = q->head;
     for (size_t i = 0; i < q->size; i++) {
-        if (!r || (l && less_than(l, r))) {
+        if (!r || (l && LESS_THAN(l->value, r->value))) {
             tem = l;
             l = l->next;
         } else {
@@ -235,19 +236,4 @@ static void q_merge(queue_t *left, queue_t *right, queue_t *q)
         q->tail = tem;
     }
     tem->next = NULL;
-}
-
-/* compare in lexicographical order */
-static bool less_than(list_ele_t *a, list_ele_t *b)
-{
-    char *str_a = a->value, *str_b = b->value;
-    while (*str_a && *str_b) {
-        if (*str_a > *str_b)
-            return false;
-        else if (*str_a++ < *str_b++)
-            return true;
-    }
-    if (!*str_a && *str_b)
-        return true;
-    return false;
 }
