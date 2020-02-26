@@ -10,7 +10,9 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include "strnatcmp.h"
 
+#define LESS_THAN(a, b) strnatcmp(a, b) < 0
 /* Data structure declarations */
 
 /* Linked list element (You shouldn't need to change this) */
